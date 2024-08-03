@@ -74,6 +74,7 @@ def add_staff(request):
 
     return render(request, 'hod_template/add_staff_template.html', context)
 
+from django.core.files.storage import default_storage
 
 def add_student(request):
     student_form = StudentForm(request.POST or None, request.FILES or None)
@@ -89,9 +90,8 @@ def add_student(request):
             course = student_form.cleaned_data.get('course')
             session = student_form.cleaned_data.get('session')
             passport = request.FILES['profile_pic']
-            fs = FileSystemStorage()
-            filename = fs.save(passport.name, passport)
-            passport_url = fs.url(filename)
+            filename = default_storage.save(passport.name, passport)
+            passport_url = default_storage.url(filename)
             try:
                 user = CustomUser.objects.create_user(
                     email=email, password=password, user_type=3, first_name=first_name, last_name=last_name, profile_pic=passport_url)
@@ -246,7 +246,7 @@ def edit_staff(request, staff_id):
 
 def edit_student(request, student_id):
     student = get_object_or_404(Student, id=student_id)
-    form = StudentForm(request.POST or None, instance=student)
+    form = StudentForm(request.POST or None, request.FILES or None, instance=student)
     context = {
         'form': form,
         'student_id': student_id,
@@ -264,16 +264,18 @@ def edit_student(request, student_id):
             course = form.cleaned_data.get('course')
             session = form.cleaned_data.get('session')
             passport = request.FILES.get('profile_pic') or None
+            
             try:
                 user = CustomUser.objects.get(id=student.admin.id)
-                if passport != None:
-                    fs = FileSystemStorage()
-                    filename = fs.save(passport.name, passport)
-                    passport_url = fs.url(filename)
+                if passport:
+                    # Save the new profile picture to S3
+                    filename = default_storage.save(passport.name, passport)
+                    passport_url = default_storage.url(filename)
                     user.profile_pic = passport_url
+                
                 user.username = username
                 user.email = email
-                if password != None:
+                if password:
                     user.set_password(password)
                 user.first_name = first_name
                 user.last_name = last_name
@@ -286,7 +288,7 @@ def edit_student(request, student_id):
                 messages.success(request, "Successfully Updated")
                 return redirect(reverse('edit_student', args=[student_id]))
             except Exception as e:
-                messages.error(request, "Could Not Update " + str(e))
+                messages.error(request, "Could Not Update: " + str(e))
         else:
             messages.error(request, "Please Fill Form Properly!")
     else:
