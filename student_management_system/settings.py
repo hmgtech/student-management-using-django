@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 import os, random, string
-SECRET_KEY = ''.join(random.choice( string.ascii_lowercase  ) for i in range( 32 ))  # Consider using your secret key
+SECRET_KEY = "my-secret-key"  # Consider using your secret key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # or 'cached_db' or 'file', etc.
