@@ -18,7 +18,13 @@ import os, random, string
 SECRET_KEY = ''.join(random.choice( string.ascii_lowercase  ) for i in range( 32 ))  # Consider using your secret key
 
 # SECURITY WARNING: don't run with debug turned on in production!
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # or 'cached_db' or 'file', etc.
 DEBUG = True
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 # ALLOWED_HOSTS = ['smswithdjango.herokuapp.com']
 ALLOWED_HOSTS = ['*']  # Not recommended but useful in dev mode
